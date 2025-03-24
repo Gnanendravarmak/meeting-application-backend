@@ -2,8 +2,8 @@ const Event = require('../models/Event');
 
 // Create Event
 exports.createEvent = async (req, res) => {
-    const { title, description, date, link, password, hostname, setduration } = req.body; // Updated
-    const newEvent = new Event({ title, description, date, link, password, hostname, setduration, userId: req.user.id }); // Updated
+    const { title, description, date, link, password, hostname, setduration, emails, color } = req.body; // Updated
+    const newEvent = new Event({ title, description, date, link, password, hostname, setduration, userId: req.user.id, emails, color }); // Updated
     try {
         await newEvent.save();
         res.status(201).json({ message: 'Event created successfully' });
@@ -25,14 +25,24 @@ exports.getAllEvents = async (req, res) => {
 // Update Event
 exports.updateEvent = async (req, res) => {
     const { id } = req.params;
-    const { title, description, date, link, password, hostname, setduration } = req.body; // Updated
+    const { title, description, date, link, password, hostname, setduration, emails, color } = req.body; // Updated
     try {
-        const updatedEvent = await Event.findByIdAndUpdate(id, { title, description, date, link, password, hostname, setduration }, { new: true }); // Updated
+        const updatedEvent = await Event.findByIdAndUpdate(id, { title, description, date, link, password, hostname, setduration, emails, color }, { new: true }); // Updated
         res.json(updatedEvent);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getEvent = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const event = await Event.findById(id);
+        res.json(event);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 // Delete Event
 exports.deleteEvent = async (req, res) => {
@@ -55,6 +65,19 @@ exports.checkConflict = async (req, res) => {
         }
         res.json({ message: 'No conflicts detected.' });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.disableEvent = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const event = await Event.findById(id);
+        event.isDisabled = !event.isDisabled;
+        await event.save();
+        res.json({ message: 'Event updated successfully' });
+    }
+    catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
